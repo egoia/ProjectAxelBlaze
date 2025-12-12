@@ -17,15 +17,16 @@ public class PlayerMovement : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
         float turnInput =  inputActions.Player.Turn.ReadValue<float>();
-        Quaternion rotation = Quaternion.Euler(0, turnInput*steering_speed*Time.deltaTime,0);
-        rigidbody.MoveRotation(rigidbody.rotation * rotation);
+        Quaternion rotation = Quaternion.Euler(0, turnInput*steering_speed*Time.fixedDeltaTime,0);
+        rigidbody.MoveRotation(transform.rotation * rotation);
+        //rigidbody.angularVelocity = new Vector3(0, turnInput*steering_speed,0);
+        //transform.Rotate(new Vector3(0, turnInput*steering_speed,0));
 
         float moveInput = inputActions.Player.Move.ReadValue<float>();
         Vector3 movement = transform.forward * speed * moveInput;
         rigidbody.linearVelocity = new Vector3(movement.x, rigidbody.linearVelocity.y, movement.z);
-
     }
 }

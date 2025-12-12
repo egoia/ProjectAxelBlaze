@@ -4,21 +4,23 @@ using UnityEngine;
 public class Genetic : MonoBehaviour
 {
     [Header("Population Settings")]
-    public int populationSize;
-    public int weightCount;
-    public int nbGeneration;
+    [Min(2)]public int populationSize;
+    [Min(1)]public int weightCount;
+    [Min(1)]public int nbGeneration;
     public float mutationRate;
     public float time;
     [Range(0f, 1f)] public float conservationRate;
 
-    private int keepWeight;
-    private int newWeight;
+    private int keepCount;
     private float timeStamp;
-    private int generation = 0;
+    private int generation = 1;
     private List<GameObject> population;
     private List<float[]> weightsList;
+    private bool isGenerating;
 
     // NOTE : Remplacer GameObject par la classe de notre objet
+    // TODO C'est un peu sale d'utiliser une seule weightlist, je devrais différencier les currents et futures
+    // J'ai pas d'enformcement dur au niveau du keepCount et conservationRate, ce qui pourrait cause des problèmes mais ça m'étonnerait que ça arrive donc osef
 
     private void Start()
     {
@@ -26,19 +28,18 @@ public class Genetic : MonoBehaviour
         // Variables Initialisation
         weightsList = new List<float[]>(populationSize);
         timeStamp = Time.time;
-        keepWeight = Mathf.FloorToInt(weightCount * conservationRate);
-        newWeight = weightCount - keepWeight;
+        keepCount = Mathf.Max(2 ,Mathf.FloorToInt(populationSize * conservationRate)); // NOTE : Guaranty we keep at least two agent to be able to cross breed
+        population = new List<GameObject>();
+
 
         // Initialisation logic
         FirstGenerationRandomWeights();
         InitPopulation();
-
-        Time.timeScale = 10;
     }
 
     private void Update()
     {
-        if (Time.time > timeStamp + time)
+        if (Time.time > timeStamp + time && !isGenerating)
             SwapGeneration();
     }
 
@@ -54,8 +55,12 @@ public class Genetic : MonoBehaviour
     }
 
     private void InitPopulation() {
+        // Reset List
+        for (int i = 0; i < population.Count; i++)
+            Destroy(population[i]);
+        population.Clear();
 
-        population = new List<GameObject>();
+        // Create new pop
         for (int i = 0; i < populationSize; i++)
             population.Add(new GameObject()); // TODO weights[i]
 
@@ -69,13 +74,15 @@ public class Genetic : MonoBehaviour
         if (generation >= nbGeneration)
             return;
 
+        isGenerating = true;
+
         EndGeneration();
         Reproduce();
         NewGeneration();
     }
     private void EndGeneration() {
 
-        // TODO Fitness est pas encore implémentée
+        // TODO Fitness est pas encore implémentéea
 
         // Compute all fitness
         for(int i = 0;i < populationSize;i++)
@@ -89,11 +96,14 @@ public class Genetic : MonoBehaviour
 
     private void Reproduce() {
 
-        // Keep only the best
-        weightsList.RemoveRange(keepWeight, newWeight);
+        // Keep only the best 
+        weightsList.Clear();
+        for (int i = 0; i < keepCount; i++)
+            continue;
+            //weightsList.Add(population[i].GetWeights());
 
         // Compute new weight based on the best individuals
-        for (int i = 0; i < newWeight; i++)
+        for (int i = 0; i < populationSize - keepCount; i++)
             weightsList.Add(CrossBreeding());
     }
 
@@ -105,9 +115,20 @@ public class Genetic : MonoBehaviour
         // Update the var
         generation += 1;
         timeStamp = Time.time;
+        isGenerating = false;
     }
 
     private float[] CrossBreeding() {
-        return weightsList[0];
+
+
+        float[] weights1 = weightsList[Random.Range(0, keepCount)];
+        float[] weights2 = weightsList[Random.Range(0, keepCount)];
+
+        float[] weights = new float[weightCount];
+
+        for (int i = 0; i < weightCount; i++)
+            weights[i] = (weights1[i] + weights2[i]) /2; // TODO Faudrait rajouter de la mutation (mutationRate)
+
+        return weights;
     }
 }

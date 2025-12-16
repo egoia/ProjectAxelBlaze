@@ -23,7 +23,7 @@ public class NeuralNetwork
         {
             for (int k = 0; k < h; k++)
             {
-                weights_1[j,k] = Random.Range(0f,1f);
+                weights_1[j,k] = Random.Range(-1f,1f);
             }
         }
 
@@ -32,7 +32,7 @@ public class NeuralNetwork
         {
             for (int k = 0; k < o; k++)
             {
-                weights_2[j,k] = Random.Range(0f,1f);
+                weights_2[j,k] = Random.Range(-1f,1f);
             }
         }
     }

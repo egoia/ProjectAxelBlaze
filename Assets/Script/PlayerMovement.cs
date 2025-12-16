@@ -6,20 +6,18 @@ public class PlayerMovement : MonoBehaviour
     public float speed; 
     public float steering_speed;
     public bool isIA = true;
+    [HideInInspector] public bool isPlaying = true;
 
     Rigidbody rigidbody;
     InputSystem_Actions inputActions;
-    NeuralNetwork brain;
+    public NeuralNetwork brain;
+    public float[] neuralInput;
 
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        if (isIA)
-        {
-            brain = new NeuralNetwork(3,5,4);
-        }
-        else
+        if (!isIA)
         {
             inputActions = new InputSystem_Actions();
             inputActions.Player.Enable();
@@ -31,20 +29,22 @@ public class PlayerMovement : MonoBehaviour
     void FixedUpdate()
     {
 
-        float turnInput;
-        float moveInput;
-        if(isIA)
+        float turnInput = 0;
+        float moveInput = 0;
+        if (isPlaying)
         {
-            float[] input = {transform.position.x, transform.position.y, transform.position.z};
-            float[] output = brain.Propagation(input);
-            turnInput = output[2] - output[3];
-            moveInput = output[0] - output[1];
+            if(isIA)
+            {
+                float[] output = brain.Propagation(neuralInput);
+                turnInput = output[1] *2 - 1;
+                moveInput = output[0] *2 - 1;
+            }
+            else
+            {
+                turnInput =  inputActions.Player.Turn.ReadValue<float>();
+                moveInput = inputActions.Player.Move.ReadValue<float>();
+            } 
         }
-        else
-        {
-            turnInput =  inputActions.Player.Turn.ReadValue<float>();
-            moveInput = inputActions.Player.Move.ReadValue<float>();
-        } 
         Quaternion rotation = Quaternion.Euler(0, turnInput*steering_speed*Time.fixedDeltaTime,0);
         rigidbody.MoveRotation(transform.rotation * rotation);
 

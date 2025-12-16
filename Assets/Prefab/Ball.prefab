@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 7893077935026024879}
   - component: {fileID: 3183946377001490233}
   - component: {fileID: 4801779618237111726}
-  - component: {fileID: 5992621149491451503}
+  - component: {fileID: -8266012702944871242}
   m_Layer: 0
   m_Name: Ball
   m_TagString: Untagged
@@ -98,7 +98,7 @@ SphereCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4683420902603926422}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: 044029acc4f62b945a197eddcc7e27fb, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -112,7 +112,7 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 0.5
   m_Center: {x: 0, y: 0, z: 0}
---- !u!54 &5992621149491451503
+--- !u!54 &-8266012702944871242
 Rigidbody:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -136,6 +136,6 @@ Rigidbody:
   m_ImplicitTensor: 1
   m_UseGravity: 1
   m_IsKinematic: 0
-  m_Interpolate: 0
+  m_Interpolate: 1
   m_Constraints: 0
-  m_CollisionDetection: 0
+  m_CollisionDetection: 1

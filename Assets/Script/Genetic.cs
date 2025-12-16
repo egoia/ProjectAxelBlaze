@@ -47,9 +47,12 @@ public class Genetic : MonoBehaviour
     }
 
     private void InitPopulation() {
+        // TODO Pour l'instant ça va créer toutes les simu en ligne on verra plus tard pour faire une grille
+        // TODO La réutilisation est infame + le code est pas propre mais on fait avec
+
         // Create new pop
         for (int i = 0; i < populationSize; i++)
-            population.Add(Instantiate(simulationPrefab));// NOTE : Default constructor will auto-create random weight
+            population.Add(Instantiate(simulationPrefab, new Vector3(0, 0, 30 * i), Quaternion.identity));// NOTE : Default constructor will auto-create random weight
 
         weightCount = population[0].GetComponent<Simulation>().GetWeightCount();
     }
@@ -63,20 +66,21 @@ public class Genetic : MonoBehaviour
 
         // Create new pop
         for (int i = 0; i < populationSize; i++) 
-            population.Add(Instantiate(simulationPrefab));
+            population.Add(Instantiate(simulationPrefab, new Vector3(0, 0, 30 * i), Quaternion.identity)); // TODO Là on est censé fournir des poids, ou juste après
 
     }
 
     // TODO Comment les noms sont à chier faudra que j'en mette des meilleurs
     private void SwapGeneration() {
 
+        isGenerating = true;
+
+        EndGeneration();
+
         // Early exit (faudra surement mettre une fonction qui gère la fin)
         if (generation >= nbGeneration)
             return;
 
-        isGenerating = true;
-
-        EndGeneration();
         Reproduce();
         NewGeneration();
     }

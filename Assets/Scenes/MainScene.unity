@@ -427,8 +427,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 81fbdd3090986444cb7abc744135e207, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Genetic
-  populationSize: 2
-  nbGeneration: 2
+  populationSize: 10
+  nbGeneration: 5
   mutationRate: 0
   time: 10
   conservationRate: 0

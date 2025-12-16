@@ -75,10 +75,10 @@ public class Simulation : MonoBehaviour
     void SpawnBall()
     {
         float spawnWidth = terrain.transform.localScale.x/4;
-        float x = Random.Range(-spawnWidth,spawnWidth);
+        float x = terrain.transform.position.x + Random.Range(-spawnWidth,spawnWidth);
 
         float spawnHeight = terrain.transform.localScale.z/4;
-        float z = Random.Range(-spawnHeight,spawnHeight);
+        float z = terrain.transform.position.z + Random.Range(-spawnHeight,spawnHeight);
 
         ballObject = Instantiate(ballPrefab);
         float y = ballObject.transform.position.y;

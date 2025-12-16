@@ -10,6 +10,8 @@ public class Genetic : MonoBehaviour
     public float time;
     [Range(0f, 1f)] public float conservationRate;
 
+    public GameObject simulationPrefab;
+
 
     private int weightCount;
     private int keepCount;
@@ -47,7 +49,9 @@ public class Genetic : MonoBehaviour
     private void InitPopulation() {
         // Create new pop
         for (int i = 0; i < populationSize; i++)
-            population.Add(new GameObject()); // NOTE : Default constructor will auto-create random weight
+            population.Add(Instantiate(simulationPrefab));// NOTE : Default constructor will auto-create random weight
+
+        weightCount = population[0].GetComponent<Simulation>().GetWeightCount();
     }
 
     private void RecreatePopulation()
@@ -58,8 +62,9 @@ public class Genetic : MonoBehaviour
         population.Clear();
 
         // Create new pop
-        for (int i = 0; i < populationSize; i++)
-            population.Add(new GameObject()); // TODO weightsList[i]
+        for (int i = 0; i < populationSize; i++) 
+            population.Add(Instantiate(simulationPrefab));
+
     }
 
     // TODO Comment les noms sont à chier faudra que j'en mette des meilleurs
@@ -77,15 +82,11 @@ public class Genetic : MonoBehaviour
     }
     private void EndGeneration() {
 
-        // TODO Fitness est pas encore implémentéea
-
-        // Compute all fitness
-        for(int i = 0;i < populationSize;i++)
-            continue;
-            //population[i].ComputeFitness(); 
+        for (int i = 0; i < population.Count; i++)
+            population[i].GetComponent<Simulation>().EndSimulation();
 
         // Sort by fitness
-        //population.Sort((a, b) => b.GetFitness().CompareTo(a.GetFitness()));
+        population.Sort((a, b) => b.GetComponent<Simulation>().GetFitness().CompareTo(a.GetComponent<Simulation>().GetFitness()));
 
     }
 
@@ -94,8 +95,7 @@ public class Genetic : MonoBehaviour
         // Keep only the best 
         weightsList.Clear();
         for (int i = 0; i < keepCount; i++)
-            continue;
-        //weightsList.Add(population[i].GetWeights());
+            weightsList.Add(population[i].GetComponent<Simulation>().GetWeights());
 
         // Compute new weight based on the best individuals
         CrossBreeding();
@@ -120,8 +120,9 @@ public class Genetic : MonoBehaviour
 
             for (int j = 1; j < keepCount; j++)
                 for (int k = 0; k < weightCount; k++)
-                    continue;
-            //weights[k] = (weightsList[i].GetWeights() + weightsList[j].GetWeights()) / 2; // TODO Faudrait rajouter de la mutation (mutationRate)
+                    // DEBUG J'ai mis les index à 0 (azparce que le "bug" de player movement crée un effet de bord
+                    // qui crée un oob ici (flatten peut pas être appelé, donc on récupère jamais la liste de poids)
+                    weights[k] = (weightsList[i][0] + weightsList[j][0]) / 2; // TODO Faudrait rajouter de la mutation (mutationRate)
 
             weightsList.Add(weights);
         }

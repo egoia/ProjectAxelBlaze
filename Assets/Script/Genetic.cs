@@ -2,15 +2,16 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class Genetic : MonoBehaviour
-{
+{ 
     [Header("Population Settings")]
     [Min(2)]public int populationSize;
-    [Min(1)]public int weightCount;
     [Min(1)]public int nbGeneration;
     public float mutationRate;
     public float time;
     [Range(0f, 1f)] public float conservationRate;
 
+
+    private int weightCount;
     private int keepCount;
     private float timeStamp;
     private int generation = 1;
@@ -30,10 +31,10 @@ public class Genetic : MonoBehaviour
         timeStamp = Time.time;
         keepCount = Mathf.Max(2 ,Mathf.FloorToInt(populationSize * conservationRate)); // NOTE : Guaranty we keep at least two agent to be able to cross breed
         population = new List<GameObject>();
+        //weightCount = Simulation.GetWeightCount();
 
 
         // Initialisation logic
-        FirstGenerationRandomWeights();
         InitPopulation();
     }
 
@@ -43,18 +44,14 @@ public class Genetic : MonoBehaviour
             SwapGeneration();
     }
 
-    private void FirstGenerationRandomWeights() {
-        for (int i = 0; i < populationSize; i++) {
-            float[] weights = new float[weightCount];
-
-            for (int j = 0; j < weightCount; j++)
-                weights[j] = Random.Range(-1f, 1f); // TODO Mettre les bons poids 
-
-            weightsList.Add(weights);
-        }
+    private void InitPopulation() {
+        // Create new pop
+        for (int i = 0; i < populationSize; i++)
+            population.Add(new GameObject()); // NOTE : Default constructor will auto-create random weight
     }
 
-    private void InitPopulation() {
+    private void RecreatePopulation()
+    {
         // Reset List
         for (int i = 0; i < population.Count; i++)
             Destroy(population[i]);
@@ -62,10 +59,8 @@ public class Genetic : MonoBehaviour
 
         // Create new pop
         for (int i = 0; i < populationSize; i++)
-            population.Add(new GameObject()); // TODO weights[i]
-
+            population.Add(new GameObject()); // TODO weightsList[i]
     }
-
 
     // TODO Comment les noms sont à chier faudra que j'en mette des meilleurs
     private void SwapGeneration() {
@@ -100,17 +95,16 @@ public class Genetic : MonoBehaviour
         weightsList.Clear();
         for (int i = 0; i < keepCount; i++)
             continue;
-            //weightsList.Add(population[i].GetWeights());
+        //weightsList.Add(population[i].GetWeights());
 
         // Compute new weight based on the best individuals
-        for (int i = 0; i < populationSize - keepCount; i++)
-            weightsList.Add(CrossBreeding());
+        CrossBreeding();
     }
 
     private void NewGeneration() {
 
         // Create the new pop
-        InitPopulation();
+        RecreatePopulation();
 
         // Update the var
         generation += 1;
@@ -118,17 +112,21 @@ public class Genetic : MonoBehaviour
         isGenerating = false;
     }
 
-    private float[] CrossBreeding() {
+    private void CrossBreeding() {
 
+        // CrossBreed 2 by 2 every kept agent
+        for (int i = 0; i < keepCount; i++) {
+            float[] weights = new float[weightCount];
 
-        float[] weights1 = weightsList[Random.Range(0, keepCount)];
-        float[] weights2 = weightsList[Random.Range(0, keepCount)];
+            for (int j = 1; j < keepCount; j++)
+                for (int k = 0; k < weightCount; k++)
+                    continue;
+            //weights[k] = (weightsList[i].GetWeights() + weightsList[j].GetWeights()) / 2; // TODO Faudrait rajouter de la mutation (mutationRate)
 
-        float[] weights = new float[weightCount];
+            weightsList.Add(weights);
+        }
 
-        for (int i = 0; i < weightCount; i++)
-            weights[i] = (weights1[i] + weights2[i]) /2; // TODO Faudrait rajouter de la mutation (mutationRate)
-
-        return weights;
     }
+
+
 }

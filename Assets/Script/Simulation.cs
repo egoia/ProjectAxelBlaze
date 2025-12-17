@@ -19,7 +19,7 @@ public class Simulation : MonoBehaviour
     public int neuralHiddenSize = 10;    
     int neuralOutputSize = 2;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    void OnEnable()
     {
         SpawnBall(); 
         foreach(var goal in goals)
@@ -80,7 +80,7 @@ public class Simulation : MonoBehaviour
         float spawnHeight = terrain.transform.localScale.z/4;
         float z = terrain.transform.position.z + Random.Range(-spawnHeight,spawnHeight);
 
-        ballObject = Instantiate(ballPrefab);
+        ballObject = Instantiate(ballPrefab, transform);
         float y = ballObject.transform.position.y;
 
         ballObject.GetComponent<Rigidbody>().position = new Vector3(x,y,z);

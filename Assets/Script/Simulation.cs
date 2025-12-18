@@ -56,7 +56,7 @@ public class Simulation : MonoBehaviour
     
     public int GetWeightCount() 
     {
-        return neuralInputSize*neuralHiddenSize*neuralOutputSize;
+        return (neuralInputSize + neuralOutputSize) * neuralHiddenSize;
     }
 
     public void EndSimulation()

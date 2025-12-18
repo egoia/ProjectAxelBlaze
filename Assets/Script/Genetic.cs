@@ -16,12 +16,11 @@ public class Genetic : MonoBehaviour
     private int weightCount;
     private int keepCount;
     private float timeStamp;
-    private int generation = 1;
+    [SerializeField] private int generation = 1;
     private List<GameObject> population;
     private List<float[]> weightsList;
     private bool isGenerating;
 
-    // NOTE : Remplacer GameObject par la classe de notre objet
     // TODO C'est un peu sale d'utiliser une seule weightlist, je devrais différencier les currents et futures
     // J'ai pas d'enformcement dur au niveau du keepCount et conservationRate, ce qui pourrait cause des problèmes mais ça m'étonnerait que ça arrive donc osef
 
@@ -33,8 +32,6 @@ public class Genetic : MonoBehaviour
         timeStamp = Time.time;
         keepCount = Mathf.Max(2 ,Mathf.FloorToInt(populationSize * conservationRate)); // NOTE : Guaranty we keep at least two agent to be able to cross breed
         population = new List<GameObject>();
-        //weightCount = Simulation.GetWeightCount();
-
 
         // Initialisation logic
         InitPopulation();
@@ -65,8 +62,13 @@ public class Genetic : MonoBehaviour
         population.Clear();
 
         // Create new pop
-        for (int i = 0; i < populationSize; i++) 
-            population.Add(Instantiate(simulationPrefab, new Vector3(0, 0, 30 * i), Quaternion.identity)); // TODO Là on est censé fournir des poids, ou juste après
+        for (int i = 0; i < populationSize; i++) {
+            GameObject simul = Instantiate(simulationPrefab, new Vector3(0, 0, 30 * i), Quaternion.identity);
+            simul.GetComponent<Simulation>().InitWithWeights(weightsList[i]);
+            population.Add(simul); // TODO Là on est censé fournir des poids, ou juste après
+
+        }
+        
 
     }
 
@@ -101,6 +103,7 @@ public class Genetic : MonoBehaviour
         for (int i = 0; i < keepCount; i++)
             weightsList.Add(population[i].GetComponent<Simulation>().GetWeights());
 
+
         // Compute new weight based on the best individuals
         CrossBreeding();
     }
@@ -118,20 +121,19 @@ public class Genetic : MonoBehaviour
 
     private void CrossBreeding() {
 
-        // CrossBreed 2 by 2 every kept agent
-        for (int i = 0; i < keepCount; i++) {
+
+        for (int i=0; i < populationSize - keepCount; i++) {
+            float[] weigthParent1 = population[Random.Range(0, keepCount)].GetComponent<Simulation>().GetWeights();
+            float[] weigthParent2 = population[Random.Range(0, keepCount)].GetComponent<Simulation>().GetWeights();
             float[] weights = new float[weightCount];
 
-            for (int j = 1; j < keepCount; j++)
-                for (int k = 0; k < weightCount; k++)
-                    // DEBUG J'ai mis les index à 0 (azparce que le "bug" de player movement crée un effet de bord
-                    // qui crée un oob ici (flatten peut pas être appelé, donc on récupère jamais la liste de poids)
-                    weights[k] = (weightsList[i][0] + weightsList[j][0]) / 2; // TODO Faudrait rajouter de la mutation (mutationRate)
+            for (int k = 0; k < weightCount; k++)
+                weights[k] = (weigthParent1[k] + weigthParent2[k]) / 2; // TODO Faudrait rajouter de la mutation (mutationRate)
 
             weightsList.Add(weights);
+
         }
 
     }
-
 
 }

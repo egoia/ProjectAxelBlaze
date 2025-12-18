@@ -427,11 +427,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 81fbdd3090986444cb7abc744135e207, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Genetic
-  populationSize: 10
-  nbGeneration: 5
+  populationSize: 100
+  nbGeneration: 20
   mutationRate: 0
-  time: 10
-  conservationRate: 0
+  time: 30
+  conservationRate: 0.1
   simulationPrefab: {fileID: 6786427076835853692, guid: 045778dfa3ff5374ea2ae5eb560f2c8a, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:

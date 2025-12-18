@@ -26,7 +26,7 @@ RenderSettings:
   m_AmbientIntensity: 1
   m_AmbientMode: 0
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
-  m_SkyboxMaterial: {fileID: 10304, guid: 0000000000000000f000000000000000, type: 0}
+  m_SkyboxMaterial: {fileID: 2100000, guid: 4444d0e2f5921cd488865b5128c82bbb, type: 2}
   m_HaloStrength: 0.5
   m_FlareStrength: 1
   m_FlareFadeSpeed: 3
@@ -428,11 +428,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Genetic
   populationSize: 100
-  nbGeneration: 20
+  nbGeneration: 100
   mutationRate: 0
   time: 30
   conservationRate: 0.1
-  simulationPrefab: {fileID: 6786427076835853692, guid: 045778dfa3ff5374ea2ae5eb560f2c8a, type: 3}
+  simulationPrefab: {fileID: 6786427076835853692, guid: e5aeb6862834e4142b7f6a3a05f24238, type: 3}
+  generation: 1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

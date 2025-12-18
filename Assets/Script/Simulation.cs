@@ -12,11 +12,12 @@ public class Simulation : MonoBehaviour
     public GameObject ballPrefab;
     public List<Goal> goals;
     GameObject ballObject;
-    [HideInInspector] int goalsScored = 0;
+    [HideInInspector] public int goalsScored = 0;
+    [HideInInspector] public int ballTouched = 0;
 
     NeuralNetwork playerBrain;
-    public int neuralInputSize = 3;
-    public int neuralHiddenSize = 10;    
+    int neuralInputSize = 6;
+    public int neuralHiddenSize = 20;    
     int neuralOutputSize = 2;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void OnEnable()
@@ -46,7 +47,7 @@ public class Simulation : MonoBehaviour
 
     public float GetFitness() 
     {
-        return -Vector3.Distance(ballObject.transform.position, player.transform.position);
+        return goalsScored*1000f + ballTouched*50f; // + 0.5f*-Vector3.Distance(ballObject.transform.position, player.transform.position);
     }
 
     public float[] GetWeights()
@@ -67,15 +68,28 @@ public class Simulation : MonoBehaviour
     public void Score()
     {
         goalsScored++;
+        Destroy(ballObject);
+        SpawnBall();
+    }
+
+    public void TouchBall()
+    {
+        ballTouched++;
     }
 
     float[] GetNeuralInputs()
-    {
+    {//TODO input en 2d
         float[] inputs = new float[neuralInputSize];
-        Vector3 input = ballObject.transform.position - player.transform.position;
-        inputs[0] = input.x;
-        inputs[1] = input.y;
-        inputs[2] = input.z;
+        Vector3 inputBall = ballObject.transform.position - player.transform.position;
+        inputs[0] = inputBall.x;
+        inputs[1] = inputBall.y;
+        inputs[2] = inputBall.z;
+        Vector3 inputGoal = goals[0].transform.position - ballObject.transform.position;
+        inputs[3] = inputGoal.x;
+        inputs[4] = inputGoal.y;
+        inputs[5] = inputGoal.z;
+        
+
         return inputs;
     }
 
@@ -88,6 +102,8 @@ public class Simulation : MonoBehaviour
         float z = terrain.transform.position.z + Random.Range(-spawnHeight,spawnHeight);
 
         ballObject = Instantiate(ballPrefab, transform);
+        ballObject.GetComponent<TouchCounter>().OnTouch += TouchBall;
+
         float y = ballObject.transform.position.y;
 
         ballObject.GetComponent<Rigidbody>().position = new Vector3(x,y,z);

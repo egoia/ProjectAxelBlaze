@@ -32,6 +32,13 @@ public class Simulation : MonoBehaviour
         player.GetComponent<PlayerMovement>().neuralInput = GetNeuralInputs();
     }
 
+    public void InitWithWeights(float[] weights)
+    {
+        playerBrain = new NeuralNetwork(weights, neuralInputSize,neuralHiddenSize,neuralOutputSize);
+        player.GetComponent<PlayerMovement>().brain = playerBrain;
+        player.GetComponent<PlayerMovement>().neuralInput = GetNeuralInputs();
+    }
+
     void Update()
     {
         player.GetComponent<PlayerMovement>().neuralInput = GetNeuralInputs();

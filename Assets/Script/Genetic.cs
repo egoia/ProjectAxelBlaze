@@ -17,7 +17,7 @@ public class Genetic : MonoBehaviour
     private int keepCount;
     private float timeStamp;
     [SerializeField] private int generation = 1;
-    private List<GameObject> population;
+    private List<Simulation> population;
     private List<float[]> weightsList;
     private bool isGenerating;
 
@@ -31,7 +31,7 @@ public class Genetic : MonoBehaviour
         weightsList = new List<float[]>(populationSize);
         timeStamp = Time.time;
         keepCount = Mathf.Max(2 ,Mathf.FloorToInt(populationSize * conservationRate)); // NOTE : Guaranty we keep at least two agent to be able to cross breed
-        population = new List<GameObject>();
+        population = new List<Simulation>();
 
         // Initialisation logic
         InitPopulation();
@@ -49,23 +49,24 @@ public class Genetic : MonoBehaviour
 
         // Create new pop
         for (int i = 0; i < populationSize; i++)
-            population.Add(Instantiate(simulationPrefab, new Vector3(0, 0, 30 * i), Quaternion.identity));// NOTE : Default constructor will auto-create random weight
+            // NOTE : Default constructor will auto-create random weight
+            population.Add(Instantiate(simulationPrefab, new Vector3(0, 0, 30 * i), Quaternion.identity).GetComponent<Simulation>());
 
-        weightCount = population[0].GetComponent<Simulation>().GetWeightCount();
+        weightCount = population[0].GetWeightCount();
     }
 
     private void RecreatePopulation()
     {
         // Reset List
         for (int i = 0; i < population.Count; i++)
-            Destroy(population[i]);
+            Destroy(population[i].gameObject);
         population.Clear();
 
         // Create new pop
         for (int i = 0; i < populationSize; i++) {
-            GameObject simul = Instantiate(simulationPrefab, new Vector3(0, 0, 30 * i), Quaternion.identity);
-            simul.GetComponent<Simulation>().InitWithWeights(weightsList[i]);
-            population.Add(simul); // TODO Là on est censé fournir des poids, ou juste après
+            Simulation simul = Instantiate(simulationPrefab, new Vector3(0, 0, 30 * i), Quaternion.identity).GetComponent<Simulation>();
+            simul.InitWithWeights(weightsList[i]);
+            population.Add(simul);
 
         }
         
@@ -89,10 +90,10 @@ public class Genetic : MonoBehaviour
     private void EndGeneration() {
 
         for (int i = 0; i < population.Count; i++)
-            population[i].GetComponent<Simulation>().EndSimulation();
+            population[i].EndSimulation();
 
         // Sort by fitness
-        population.Sort((a, b) => b.GetComponent<Simulation>().GetFitness().CompareTo(a.GetComponent<Simulation>().GetFitness()));
+        population.Sort((a, b) => b.GetFitness().CompareTo(a.GetFitness()));
 
     }
 
@@ -101,7 +102,7 @@ public class Genetic : MonoBehaviour
         // Keep only the best 
         weightsList.Clear();
         for (int i = 0; i < keepCount; i++)
-            weightsList.Add(population[i].GetComponent<Simulation>().GetWeights());
+            weightsList.Add(population[i].GetWeights());
 
 
         // Compute new weight based on the best individuals
@@ -123,12 +124,20 @@ public class Genetic : MonoBehaviour
 
 
         for (int i=0; i < populationSize - keepCount; i++) {
-            float[] weigthParent1 = population[Random.Range(0, keepCount)].GetComponent<Simulation>().GetWeights();
-            float[] weigthParent2 = population[Random.Range(0, keepCount)].GetComponent<Simulation>().GetWeights();
+            float[] weigthParent1 = population[Random.Range(0, keepCount)].GetWeights();
+            float[] weigthParent2 = population[Random.Range(0, keepCount)].GetWeights();
             float[] weights = new float[weightCount];
 
-            for (int k = 0; k < weightCount; k++)
-                weights[k] = (weigthParent1[k] + weigthParent2[k]) / 2; // TODO Faudrait rajouter de la mutation (mutationRate)
+            int cutOffIndex = Random.Range(0, weightCount);
+
+            for (int j = 0; j < cutOffIndex; j++)
+                weights[j] = weigthParent1[j];
+
+            for (int j = cutOffIndex; j < weightCount; j++)
+                weights[j] = weigthParent2[j];
+
+            //for (int k = 0; k < weightCount; k++)
+            //   weights[k] = (weigthParent1[k] + weigthParent2[k]) / 2; // TODO Faudrait rajouter de la mutation (mutationRate)
 
             weightsList.Add(weights);
 

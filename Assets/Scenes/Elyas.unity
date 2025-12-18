@@ -435,6 +435,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Simulation
       objectReference: {fileID: 0}
+    - target: {fileID: 9205375445803952880, guid: 045778dfa3ff5374ea2ae5eb560f2c8a, type: 3}
+      propertyPath: isIA
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

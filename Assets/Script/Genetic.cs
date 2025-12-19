@@ -1,8 +1,29 @@
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 public class Genetic : MonoBehaviour
-{ 
+{
+
+    //region ===== JSON =====
+    [System.Serializable]
+    public class GenerationData{
+        public int generation;
+        public List<RankData> ranks = new();
+    }
+
+    [System.Serializable]
+    public class RankData {
+        public int rank;
+        public float[] weights;
+    }
+
+    [System.Serializable]
+    public class GeneticDump { public List<GenerationData> generations = new(); }
+
+    private GeneticDump jsonDump = new GeneticDump();
+    //endregion
+
     [Header("Population Settings")]
     [Min(2)]public int populationSize;
     [Min(1)]public int nbGeneration;
@@ -69,8 +90,6 @@ public class Genetic : MonoBehaviour
             population.Add(simul);
 
         }
-        
-
     }
 
     // TODO Comment les noms sont à chier faudra que j'en mette des meilleurs
@@ -81,20 +100,41 @@ public class Genetic : MonoBehaviour
         EndGeneration();
 
         // Early exit (faudra surement mettre une fonction qui gère la fin)
-        if (generation >= nbGeneration)
+        if (generation >= nbGeneration) {
+            DumpJson();
             return;
+        }
 
         Reproduce();
         NewGeneration();
     }
     private void EndGeneration() {
+        // NOTE : On trie avant de créer le JSON pour avoir un JSON rangé
 
+        // Deactivate each simulation
         for (int i = 0; i < population.Count; i++)
             population[i].EndSimulation();
 
         // Sort by fitness
         population.Sort((a, b) => b.GetFitness().CompareTo(a.GetFitness()));
 
+        // === JSON build ===
+
+        // New generation json
+        GenerationData genData = new GenerationData();
+        genData.generation = generation;
+
+        for (int i = 0;i < populationSize; i++) {
+            // Create the simulation json
+            RankData rankData = new RankData();
+            rankData.rank = i;
+            rankData.weights = population[i].GetWeights();
+
+            genData.ranks.Add(rankData);
+        }
+
+
+        jsonDump.generations.Add(genData);
     }
 
     private void Reproduce() {
@@ -143,6 +183,12 @@ public class Genetic : MonoBehaviour
 
         }
 
+    }
+
+    private void DumpJson() {
+        string json = JsonUtility.ToJson(jsonDump, true);
+        string path = Path.Combine(Application.persistentDataPath, "genetic_dump.json");
+        File.WriteAllText(path, json);
     }
 
 }

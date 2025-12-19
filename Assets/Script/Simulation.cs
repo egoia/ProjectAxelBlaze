@@ -1,6 +1,5 @@
-
-using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -8,56 +7,81 @@ public class Simulation : MonoBehaviour
 {
     public GameObject player;
     public GameObject terrain;
-    public float duration = 30f;
+    GameObject _ballObject;
     public GameObject ballPrefab;
+    
+    //Fitness Parameters
     public List<Goal> goals;
-    GameObject ballObject;
-    [HideInInspector] public int goalsScored = 0;
-    [HideInInspector] public int ballTouched = 0;
+    [HideInInspector] public int goalsScored;
+    [HideInInspector] public int ballTouched;
+    private List<float> _ballDistances;
+    private float _travelledDistance;
+    private Vector3 _playerLastPosition;
+    public float registerDataTimer=1f;
+    private float _timer;
 
-    NeuralNetwork playerBrain;
-    int neuralInputSize = 6;
+    //Brain Parameters
+    NeuralNetwork _playerBrain;
+    readonly int _neuralInputSize = 4;
     public int neuralHiddenSize = 20;    
-    int neuralOutputSize = 2;
+    readonly int _neuralOutputSize = 2;
+    
+    
+    
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void OnEnable()
     {
+        _playerLastPosition = player.transform.position;
+        _ballDistances = new List<float>();
         SpawnBall(); 
         foreach(var goal in goals)
         {
             goal.OnScore += Score;
         }
 
-        playerBrain = new NeuralNetwork(neuralInputSize,neuralHiddenSize,neuralOutputSize);
-        player.GetComponent<PlayerMovement>().brain = playerBrain;
-        player.GetComponent<PlayerMovement>().neuralInput = GetNeuralInputs();
-    }
-
-    public void InitWithWeights(float[] weights)
-    {
-        playerBrain = new NeuralNetwork(weights, neuralInputSize,neuralHiddenSize,neuralOutputSize);
-        player.GetComponent<PlayerMovement>().brain = playerBrain;
+        _playerBrain = new NeuralNetwork(_neuralInputSize,neuralHiddenSize,_neuralOutputSize);
+        player.GetComponent<PlayerMovement>().brain = _playerBrain;
         player.GetComponent<PlayerMovement>().neuralInput = GetNeuralInputs();
     }
 
     void Update()
     {
+        _timer += Time.deltaTime;
+        if (_timer > registerDataTimer)
+        {
+            _timer = 0;
+            _ballDistances.Add(Vector3.Distance(_ballObject.transform.position, player.transform.position));
+            _travelledDistance +=(Vector3.Distance(_playerLastPosition, player.transform.position));
+            _playerLastPosition = player.transform.position;
+        }
+
+        player.GetComponent<PlayerMovement>().neuralInput = GetNeuralInputs();
+    }
+    
+    public void InitWithWeights(float[] weights)
+    {
+        _playerBrain = new NeuralNetwork(weights, _neuralInputSize,neuralHiddenSize,_neuralOutputSize);
+        player.GetComponent<PlayerMovement>().brain = _playerBrain;
         player.GetComponent<PlayerMovement>().neuralInput = GetNeuralInputs();
     }
 
+
     public float GetFitness() 
     {
-        return goalsScored*1000f + ballTouched*50f; // + 0.5f*-Vector3.Distance(ballObject.transform.position, player.transform.position);
+        float avgBallDistance = _ballDistances.Average();
+        print(avgBallDistance);
+        print(_travelledDistance);
+        return goalsScored * 1000f + ballTouched * 50f - 10f * avgBallDistance + 0.1f*_travelledDistance; // + 0.5f*-Vector3.Distance(ballObject.transform.position, player.transform.position);
     }
 
     public float[] GetWeights()
     {
-        return playerBrain.Flatten();
+        return _playerBrain.Flatten();
     }
     
     public int GetWeightCount() 
     {
-        return (neuralInputSize + neuralOutputSize) * neuralHiddenSize;
+        return (_neuralInputSize + _neuralOutputSize) * neuralHiddenSize;
     }
 
     public void EndSimulation()
@@ -65,35 +89,33 @@ public class Simulation : MonoBehaviour
         player.GetComponent<PlayerMovement>().isPlaying = false;
     }
 
-    public void Score()
+    private void Score()
     {
         goalsScored++;
-        Destroy(ballObject);
+        Destroy(_ballObject);
         SpawnBall();
     }
 
-    public void TouchBall()
+    private void TouchBall()
     {
         ballTouched++;
     }
 
-    float[] GetNeuralInputs()
-    {//TODO input en 2d
-        float[] inputs = new float[neuralInputSize];
-        Vector3 inputBall = ballObject.transform.position - player.transform.position;
+    private float[] GetNeuralInputs()
+    {
+        float[] inputs = new float[_neuralInputSize];
+        Vector3 inputBall = _ballObject.transform.position - player.transform.position;
         inputs[0] = inputBall.x;
         inputs[1] = inputBall.y;
-        inputs[2] = inputBall.z;
-        Vector3 inputGoal = goals[0].transform.position - ballObject.transform.position;
-        inputs[3] = inputGoal.x;
-        inputs[4] = inputGoal.y;
-        inputs[5] = inputGoal.z;
+        Vector3 inputGoal = goals[0].transform.position - _ballObject.transform.position;
+        inputs[2] = inputGoal.x;
+        inputs[3] = inputGoal.y;
         
 
         return inputs;
     }
 
-    void SpawnBall()
+    private void SpawnBall()
     {
         float spawnWidth = terrain.transform.localScale.x/4;
         float x = terrain.transform.position.x + Random.Range(-spawnWidth,spawnWidth);
@@ -101,12 +123,12 @@ public class Simulation : MonoBehaviour
         float spawnHeight = terrain.transform.localScale.z/4;
         float z = terrain.transform.position.z + Random.Range(-spawnHeight,spawnHeight);
 
-        ballObject = Instantiate(ballPrefab, transform);
-        ballObject.GetComponent<TouchCounter>().OnTouch += TouchBall;
+        _ballObject = Instantiate(ballPrefab, transform);
+        _ballObject.GetComponent<TouchCounter>().OnTouch += TouchBall;
 
-        float y = ballObject.transform.position.y;
+        float y = _ballObject.transform.position.y;
 
-        ballObject.GetComponent<Rigidbody>().position = new Vector3(x,y,z);
+        _ballObject.GetComponent<Rigidbody>().position = new Vector3(x,y,z);
     }
 
     

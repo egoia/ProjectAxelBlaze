@@ -713,12 +713,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   player: {fileID: 3495289114487429883}
   terrain: {fileID: 1767151790585271929}
-  duration: 30
   ballPrefab: {fileID: 4683420902603926422, guid: d1fdb53ad95ffbd4fa60055319269364, type: 3}
   goals:
   - {fileID: 5448937857199464630}
   goalsScored: 0
-  neuralHiddenSize: 10
+  ballTouched: 0
+  registerDataTimer: 1
+  neuralHiddenSize: 20
 --- !u!114 &2532450697872283162
 MonoBehaviour:
   m_ObjectHideFlags: 0

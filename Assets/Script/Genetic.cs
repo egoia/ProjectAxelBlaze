@@ -6,6 +6,16 @@ public class Genetic : MonoBehaviour
 {
 
     //region ===== JSON =====
+    [Header("JSON Settings")]
+    public string JsonName = "weightDump";
+    [Tooltip("The lower the more step, the higher the less step (percentage)")]
+    [Range(0f, 1f)] public float generationStepRate;
+    [Tooltip("The percentage of agents to dump (ranked from best to worst")]
+    [Range(0f, 1f)] public float dumpConservationRate;
+    private int dumpConservationCount;
+    private int dumpGenerationStep;
+    // TODO Add an option to always force dump of first generation
+
     [System.Serializable]
     public class GenerationData{
         public int generation;
@@ -53,6 +63,8 @@ public class Genetic : MonoBehaviour
         timeStamp = Time.time;
         keepCount = Mathf.Max(2 ,Mathf.FloorToInt(populationSize * conservationRate)); // NOTE : Guaranty we keep at least two agent to be able to cross breed
         population = new List<Simulation>();
+        dumpConservationCount = Mathf.RoundToInt(populationSize * dumpConservationRate);
+        dumpGenerationStep = Mathf.Max(1, Mathf.RoundToInt(nbGeneration * generationStepRate)); // NOTE : Guaranty it's at least one or we will have division by 0 problem
 
         // Initialisation logic
         InitPopulation();
@@ -102,6 +114,14 @@ public class Genetic : MonoBehaviour
         // Early exit (faudra surement mettre une fonction qui gère la fin)
         if (generation >= nbGeneration) {
             DumpJson();
+
+            // TODO Le mieux ça serait d'avoir une fonction à appeler qui ferait tout ça et qui pourrait aussi afficher un UI final
+
+            // Clear the agents one last time
+            for (int i = 0; i < population.Count; i++)
+                Destroy(population[i].gameObject);
+            population.Clear();
+
             return;
         }
 
@@ -120,19 +140,22 @@ public class Genetic : MonoBehaviour
 
         // === JSON build ===
 
+        // Skip the dump of generation based on the step
+        if ((generation) % dumpGenerationStep != 0)
+            return;
+
         // New generation json
         GenerationData genData = new GenerationData();
         genData.generation = generation;
 
-        for (int i = 0;i < populationSize; i++) {
+        for (int i = 0;i < dumpConservationCount; i++) {
             // Create the simulation json
             RankData rankData = new RankData();
-            rankData.rank = i;
+            rankData.rank = i + 1;
             rankData.weights = population[i].GetWeights();
 
             genData.ranks.Add(rankData);
         }
-
 
         jsonDump.generations.Add(genData);
     }
@@ -161,23 +184,21 @@ public class Genetic : MonoBehaviour
     }
 
     private void CrossBreeding() {
-
-
         for (int i=0; i < populationSize - keepCount; i++) {
+
+            // Loop Initialisation
             float[] weigthParent1 = population[Random.Range(0, keepCount)].GetWeights();
             float[] weigthParent2 = population[Random.Range(0, keepCount)].GetWeights();
             float[] weights = new float[weightCount];
-
             int cutOffIndex = Random.Range(0, weightCount);
 
+            // Weight from parent 1
             for (int j = 0; j < cutOffIndex; j++)
                 weights[j] = weigthParent1[j];
 
+            // Weight from parent 2
             for (int j = cutOffIndex; j < weightCount; j++)
                 weights[j] = weigthParent2[j];
-
-            //for (int k = 0; k < weightCount; k++)
-            //   weights[k] = (weigthParent1[k] + weigthParent2[k]) / 2; // TODO Faudrait rajouter de la mutation (mutationRate)
 
             weightsList.Add(weights);
 
@@ -185,9 +206,16 @@ public class Genetic : MonoBehaviour
 
     }
 
+    // NOTE : Works only in editor, won't work in build
     private void DumpJson() {
+        // JSONIFY
         string json = JsonUtility.ToJson(jsonDump, true);
-        string path = Path.Combine(Application.persistentDataPath, "genetic_dump.json");
+
+        // PATH
+        string projectRoot = Directory.GetParent(Application.dataPath).FullName;
+        string path = Path.Combine(projectRoot, JsonName + ".json");
+
+        // WRITE
         File.WriteAllText(path, json);
     }
 

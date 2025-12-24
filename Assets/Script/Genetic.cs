@@ -5,7 +5,7 @@ using UnityEngine;
 public class Genetic : MonoBehaviour
 {
 
-    //region ===== JSON =====
+    #region ===== JSON =====
     [Header("JSON Settings")]
     public string JsonName = "weightDump";
     [Tooltip("The lower the more step, the higher the less step (percentage)")]
@@ -32,17 +32,17 @@ public class Genetic : MonoBehaviour
     public class GeneticDump { public List<GenerationData> generations = new(); }
 
     private GeneticDump jsonDump = new GeneticDump();
-    //endregion
+    #endregion
 
+    #region ===== POPULATION =====
     [Header("Population Settings")]
     [Min(2)]public int populationSize;
     [Min(1)]public int nbGeneration;
     public float mutationRate;
     public float time;
     [Range(0f, 1f)] public float conservationRate;
-
     public GameObject simulationPrefab;
-
+    [Min(1)] public int simulationPerRow;
 
     private int weightCount;
     private int keepCount;
@@ -51,6 +51,7 @@ public class Genetic : MonoBehaviour
     private List<Simulation> population;
     private List<float[]> weightsList;
     private bool isGenerating;
+    #endregion
 
     // TODO C'est un peu sale d'utiliser une seule weightlist, je devrais différencier les currents et futures
     // J'ai pas d'enformcement dur au niveau du keepCount et conservationRate, ce qui pourrait cause des problèmes mais ça m'étonnerait que ça arrive donc osef
@@ -83,7 +84,7 @@ public class Genetic : MonoBehaviour
         // Create new pop
         for (int i = 0; i < populationSize; i++)
             // NOTE : Default constructor will auto-create random weight
-            population.Add(Instantiate(simulationPrefab, new Vector3(0, 0, 30 * i), Quaternion.identity).GetComponent<Simulation>());
+            population.Add(Instantiate(simulationPrefab, new Vector3(60 * (i / simulationPerRow), 0, 30 * (i%simulationPerRow)), Quaternion.identity).GetComponent<Simulation>());
 
         weightCount = population[0].GetWeightCount();
     }
@@ -97,7 +98,7 @@ public class Genetic : MonoBehaviour
 
         // Create new pop
         for (int i = 0; i < populationSize; i++) {
-            Simulation simul = Instantiate(simulationPrefab, new Vector3(0, 0, 30 * i), Quaternion.identity).GetComponent<Simulation>();
+            Simulation simul = Instantiate(simulationPrefab, new Vector3(60 * (i / simulationPerRow), 0, 30 * (i%simulationPerRow)), Quaternion.identity).GetComponent<Simulation>();
             simul.InitWithWeights(weightsList[i]);
             population.Add(simul);
 

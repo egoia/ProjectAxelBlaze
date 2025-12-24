@@ -427,12 +427,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 81fbdd3090986444cb7abc744135e207, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Genetic
+  JsonName: weightDump
+  generationStepRate: 0
+  dumpConservationRate: 0
   populationSize: 100
   nbGeneration: 100
   mutationRate: 0
   time: 30
   conservationRate: 0.1
   simulationPrefab: {fileID: 6786427076835853692, guid: e5aeb6862834e4142b7f6a3a05f24238, type: 3}
+  simulationPerRow: 10
   generation: 1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:

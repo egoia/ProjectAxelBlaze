@@ -78,7 +78,6 @@ public class Genetic : MonoBehaviour
     }
 
     private void InitPopulation() {
-        // TODO Pour l'instant ça va créer toutes les simu en ligne on verra plus tard pour faire une grille
         // TODO La réutilisation est infame + le code est pas propre mais on fait avec
 
         // Create new pop
@@ -180,6 +179,7 @@ public class Genetic : MonoBehaviour
 
         // Update the var
         generation += 1;
+        GenerationUI.Instance.UpdateText(generation);
         timeStamp = Time.time;
         isGenerating = false;
     }
